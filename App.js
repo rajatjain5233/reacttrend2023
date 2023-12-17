@@ -1,4 +1,4 @@
-import { StatusBar } from 'expo-status-bar';
+
 import React from 'react';
 import { StyleSheet, Text, View,FlatList,
   ActivityIndicator,
@@ -11,14 +11,15 @@ var ATR = require('technicalindicators').ATR
 var MFI = require('technicalindicators').MFI
 var TI = require('technicalindicators');
 const SMA = require('technicalindicators').SMA;
+import pairs from "./src/config/pairs"
 
 export default   function App() {
     const [symbolData, setSymbolData] = useState([]);
     let limit =300;
+    console.log(pairs)
 
-
-    const symbols = ['CHRUSDT', 'BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'LTCUSDT'];
-  
+    // pairs.pairs.length=10;
+    const symbols = pairs.pairs;
   
 
 
@@ -81,15 +82,12 @@ export default   function App() {
 
     function calculateTR(highPrices, lowPrices, closePrices) {
       const trValues = [];
-
       for (let i = 1; i < closePrices.length; i++) {
         const highLowDiff = parseFloat(highPrices[i]) - parseFloat(lowPrices[i]);
         const highCloseDiff = Math.abs(parseFloat(highPrices[i]) - parseFloat(closePrices[i - 1]));
         const lowCloseDiff = Math.abs(parseFloat(lowPrices[i]) - parseFloat(closePrices[i - 1]));
-
         trValues.push(Math.max(highLowDiff, highCloseDiff, lowCloseDiff));
       }
-
       return trValues;
     }
 
@@ -122,11 +120,15 @@ export default   function App() {
 
 
           for (const symbol of symbols) {
-            fetch('https://api1.binance.com/api/v3/klines?symbol='+symbol+'&limit='+limit+'&interval=15m',   {method: "GET"})
+          try{
+
+          
+            fetch('https://api1.binance.com/api/v3/klines?symbol='+symbol+'&limit='+limit+'&interval=1d',   {
+              method: "GET"})
             .then((response) => response.json())
             .then((responseData) =>
             {  
-            //   console.log("symbol",symbol)
+              console.log("responseData",responseData)
 
                         
 
@@ -158,7 +160,7 @@ export default   function App() {
               // console.log(superTrendValues);
               let symbol_Individual_data={};
               symbol_Individual_data.pair=symbol;
-              symbol_Individual_data.signal=superTrendValues[limit-1][1];
+              symbol_Individual_data.signal=superTrendValues[superTrendValues.length-1][1];
               console.log(symbol_Individual_data);
               newData.push(symbol_Individual_data);
               count++;
@@ -169,7 +171,13 @@ export default   function App() {
                 
 
                         
+            }).catch((error)=>{
+              console.log("error",error)
             })
+
+          }catch(e){
+            console.log(e)
+          }  
 
           }
           
@@ -191,7 +199,7 @@ export default   function App() {
       <Text style={styles.text}>Favorite Pairs </Text>
       
       {symbolData.map(symbol => (
-        <p key={symbol.pair}>
+        <Text key={symbol.pair}>
           {
             symbol.pair+"   "
           }
@@ -199,7 +207,7 @@ export default   function App() {
           {
             symbol.signal
           }
-        </p>
+        </Text>
       ))}
 
   
